@@ -59,6 +59,74 @@ Efficient spatial pattern extraction through double-rotation
 Comprehensive data preservation (coordinates, identifiers, and processed values)
 
 Optimized for image datasets like MNIST
+
+code how to collect patterns
+import torch
+import time
+from torchvision.datasets import MNIST
+from torchvision.transforms import ToTensor
+from torch.utils.data import Subset
+
+
+def extract_precise_patterns(dataset):
+    """
+    Precision pattern extraction with:
+    - Full floating-point precision preservation
+    - Strict non-zero pattern validation
+    - Exact output format: [sum1-8, x, y, data_num, label]
+    """
+    start_time = time.perf_counter()
+    patterns = []
+
+    for data_num, (image, label) in enumerate(dataset):
+        image = image.squeeze()
+        padded = torch.nn.functional.pad(image, (1, 1, 1, 1), 'constant', 0)
+
+        for i in range(1, 29):
+            for j in range(1, 29):
+                if padded[i, j] > 0:
+                    sums = []
+                    for di, dj in [(-1, -1), (-1, 0), (-1, 1),
+                                   (0, -1), (0, 1),
+                                   (1, -1), (1, 0), (1, 1)]:
+                        # 3x3 sum with precise floating-point accumulation
+                        window = padded[i + di - 1:i + di + 2, j + dj - 1:j + dj + 2]
+                        sums.append(torch.sum(window).item())
+
+                    if any(s != 0 for s in sums):
+                        # Format: [8 sums, x, y, data_num, label]
+                        pattern = sums + [i - 1, j - 1, data_num, label]
+                        patterns.append(pattern)
+
+    return patterns, time.perf_counter() - start_time
+
+
+if __name__ == "__main__":
+    print("Running precision extraction...")
+    mnist = MNIST(root='./data', train=True, download=True, transform=ToTensor())
+
+    # Create a subset of first 10 samples for verification
+    test_data = Subset(mnist, range(10))
+    patterns, time_elapsed = extract_precise_patterns(test_data)
+
+    print(f"\nExtracted {len(patterns)} valid patterns in {time_elapsed:.2f}s")
+
+    if patterns:
+        print("\nFirst valid pattern (exact format):")
+        print(patterns[0])
+
+        print("\nStructure verification:")
+        print(f"Type: {type(patterns[0])} (length: {len(patterns[0])})")
+        print(f"Sum values (8): {patterns[0][:8]}")
+        print(f"Coordinates (x,y): {patterns[0][8:10]}")
+        print(f"Metadata (data_num, label): {patterns[0][10:]}")
+
+        # Save sample output for verification
+        with open("pattern_sample.txt", "w") as f:
+            f.write(str(patterns[0]))
+        print("\nSample pattern saved to 'pattern_sample.txt'")
+
+
 ## Installation  
 ```bash
 git clone https://github.com/yourusername/SCRPT.git  
