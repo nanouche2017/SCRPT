@@ -4,8 +4,61 @@
 ## Features  
 - ✅ **Fully Transparent** – Every validation can be traced back to a specific pattern type.  
 - 🚀 **Higher Accuracy** – Outperforms traditional CNNs in benchmark tests.  
-- 🚀 **Faster Processing** – Efficient background management reduces computational overhead.  
+- 🚀 **Faster Processing** – Efficient background management reduces computational overhead.
+-  ✨ Key Features
+🎯 Background Management
+Enhanced Learning & Validation: Manages backgrounds to speed up both the learning process and the validation process, significantly improving SCRPT's efficiency.
+Intelligent Pattern Separation:
+Stores background patterns separately from useful patterns during data collection.
+Uses a simple conditional rule:
+python
+IF PATTERN == PATTERN[-1]: STORE AS BACKGROUND_PATTERN  
+ELSE: STORE AS USEFUL_PATTERN 
 
+Optimized Data Processing:
+This separation allows the model to cluster, clean, and optimize useful patterns, which typically represent ~25% of the total data.
+
+🔄 Pattern Collection
+SCRPT employs an advanced double-rotation method to efficiently extract patterns from datasets:
+
+Core Collection Process:
+
+For each non-zero element identified as a pattern center, SCRPT:
+
+Captures the 8 surrounding elements (primary rotation)
+
+For each of these 8 elements, captures their 8 surrounding elements (secondary rotation)
+
+Sums these secondary rotation elements
+
+Data Storage:
+Each collected pattern is stored in an array containing:
+
+Coordinates of the pattern center
+
+Data number (identifier)
+
+Associated label
+
+The 8 summed values from secondary rotations
+
+MNIST Dataset Example:
+
+python
+if pixel_value != 0:  # Identify pattern center
+    store_pattern(
+        center_coordinates,
+        data_number,
+        label,
+        [sum(secondary_rotation_1), ..., sum(secondary_rotation_8)]
+    )
+Key Advantages:
+
+Efficient spatial pattern extraction through double-rotation
+
+Comprehensive data preservation (coordinates, identifiers, and processed values)
+
+Optimized for image datasets like MNIST
 ## Installation  
 ```bash
 git clone https://github.com/yourusername/SCRPT.git  
